@@ -26,5 +26,11 @@ springdoc:
 demoservice:
   log:
     path: logs
-    rolloverSize: 1MB    
+    rolloverSize: 1MB
+
+#custom property for enabling log streaming to logstash
+logstash:
+  enable: false
+  ip: 1.2.3.4
+  port: 80    
       
