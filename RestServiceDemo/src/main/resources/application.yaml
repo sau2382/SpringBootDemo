@@ -22,4 +22,9 @@ springdoc:
     path: /api-docs
   swagger-ui:
     path: /swagger
+    
+demoservice:
+  log:
+    path: logs
+    rolloverSize: 1MB    
       
