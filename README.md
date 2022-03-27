@@ -15,4 +15,6 @@
 
 4. Central Config dependencies from Spring cloud config server
    - Single config repo to manage config for multiple microservices - https://github.com/sau2382/ConfigRepo
-   - Retry to fetch config in case config server is down temporarily  
+   - Retry to fetch config in case config server is down temporarily 
+ 
+5. Netflix Eureka based naming and discovery service  
