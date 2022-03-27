@@ -3,8 +3,10 @@ server:
   servlet:
     context-path: /demoservice
 spring:
-   application:
-      name: demoservice  
+  application:
+    name: demo-service  
+  config:
+    import: optional:configserver:http://localhost:8888
 
 management:
   endpoints:
@@ -27,6 +29,7 @@ demoservice:
   log:
     path: logs
     rolloverSize: 1MB
+  welcometext: "my app1.0"  
 
 #custom property for enabling log streaming to logstash
 logstash:

@@ -15,7 +15,7 @@ public class TestController {
 	
 	private static final String template = "Hello, %s from %s!";
 	
-	@Value("${spring.application.name}")
+	@Value("${demoservice.welcometext}")
 	private String appName;
 	
 	@GetMapping("/test")
@@ -24,5 +24,6 @@ public class TestController {
 		return new Name((long)1, String.format(template, name, appName));
 		
 	}
-
+	
+	
 }

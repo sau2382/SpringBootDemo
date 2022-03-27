@@ -1,0 +1,30 @@
+server:
+  port : 8888
+
+spring:
+  application:
+    name: spring-cloud-config-server  
+  cloud:
+    config:
+      server:
+        git:
+          #uri: file:///D:/workspaces/git_local_repo
+          uri: https://github.com/sau2382/ConfigRepo
+          #basedir: target/config
+          default-label: main
+          
+management:
+  endpoints:
+    web:
+      base-path: "/admin"
+      exposure:
+        include: "*"
+  endpoint:
+    env:
+      post:
+        enabled: true
+        
+logging:
+  level:
+    com.netflix.discovery: 'OFF'
+    org.springframework.cloud: 'DEBUG'
