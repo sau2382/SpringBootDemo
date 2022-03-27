@@ -23,4 +23,4 @@ eureka:
     register-with-eureka: false
     fetch-registry: false
   server:
-    waitTimeInMsWhenSyncEmpty: 0  
+    waitTimeInMsWhenSyncEmpty:  0  
