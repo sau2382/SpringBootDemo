@@ -6,8 +6,8 @@ spring:
   application:
     name: demo-service  
   config:
-    #import: optional:configserver:http://localhost:8888
-    import: configserver:http://localhost:8888?fail-fast=true&max-attempts=10&max-interval=1500&multiplier=1.2&initial-interval=1100
+    import: optional:configserver:http://localhost:8888?fail-fast=false&max-attempts=10&max-interval=1500&multiplier=1.2&initial-interval=1100
+    #import: configserver:http://localhost:8888?fail-fast=true&max-attempts=10&max-interval=1500&multiplier=1.2&initial-interval=1100
   cloud:
     config:
       enabled: true
