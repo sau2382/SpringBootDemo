@@ -12,6 +12,10 @@ spring:
           uri: https://github.com/sau2382/ConfigRepo
           #basedir: target/config
           default-label: main
+          timeout: 10
+          search-paths:
+            - microservice1
+            - microservice2
           
 management:
   endpoints:
