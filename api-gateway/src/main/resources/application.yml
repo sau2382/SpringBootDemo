@@ -1,0 +1,31 @@
+server:
+  port : 8765
+
+spring:
+  application:
+    name: api-gateway 
+  config:
+    import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888/}
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          #enabled: true
+          #lower-case-service-id: true
+            
+management:
+  endpoints:
+    web:
+      base-path: "/admin"
+      exposure:
+        include: "*"
+  endpoint:
+    env:
+      post:
+        enabled: true
+        
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+      
