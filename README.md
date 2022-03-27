@@ -12,3 +12,7 @@
 
 3. Automated getter/setter/constructor
    - project lombok implementation in sample model class
+
+4. Central Config dependencies from Spring cloud config server
+   - Single config repo to manage config for multiple microservices - https://github.com/sau2382/ConfigRepo
+   - Retry to fetch config in case config server is down temporarily  
