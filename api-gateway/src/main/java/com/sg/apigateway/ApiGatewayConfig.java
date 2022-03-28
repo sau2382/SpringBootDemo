@@ -17,8 +17,8 @@ public class ApiGatewayConfig {
 								.addRequestHeader("Header1", "dummyHeader")
 								.addRequestParameter("Param", "dummyParam"))
 						.uri("http://httpbin.org:80"))
-				.route(p -> p.path("**/test*")
-						.uri("lb://DEMO-SERVICE"))
+				.route(p -> p.path("/demoservice/**")
+						.uri("lb://demo-service"))
 				.build();
 	}
 
