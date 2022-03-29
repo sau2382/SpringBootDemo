@@ -6,6 +6,9 @@ spring:
     name: naming-server 
   config:
     import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888/}
+  sleuth:
+    sampler:
+      probability: 1.0        
     
 management:
   endpoints:

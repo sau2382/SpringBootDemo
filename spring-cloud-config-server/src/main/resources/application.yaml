@@ -16,6 +16,9 @@ spring:
           search-paths:
             - microservice1
             - microservice2
+  sleuth:
+    sampler:
+      probability: 1.0                
           
 management:
   endpoints:

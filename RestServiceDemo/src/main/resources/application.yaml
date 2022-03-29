@@ -13,14 +13,16 @@ spring:
       enabled: true
       name: demo-service
       fail-fast: true
-      request-connect-timeout: 5
-      request-read-timeout: 20
+      request-connect-timeout: 10
+      request-read-timeout: 30
 #      retry:
 #        max-attempts: 10
 #        max-interval: 1500
 #        multiplier: 1.2
 #        initial-interval: 1100
-#      
+  sleuth:
+    sampler:
+      probability: 1.0
 
 eureka:
   client:
@@ -48,12 +50,13 @@ demoservice:
   log:
     path: logs
     rolloverSize: 1MB
-  welcometext: "my app1.0"
+  welcometext: "my app local 1.0"
  
 
 #custom property for enabling log streaming to logstash
 logstash:
   enable: false
   ip: 1.2.3.4
-  port: 80    
-      
+  port: 80
+  
+     

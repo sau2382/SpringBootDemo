@@ -1,0 +1,94 @@
+version: '3.7'
+
+services:
+
+  demo-rest-service:
+    image: sau2382/demo-rest-service:0.0.1-SNAPSHOT
+    mem_limit: 700m
+    ports:
+      - "8000:80"
+    networks:
+      - demo-rest-network
+    depends_on:
+      - naming-server
+      - spring-config-server
+      - rabbitmq
+    environment:
+      EUREKA.CLIENT.SERVICEURL.DEFAULTZONE: http://naming-server:8761/eureka
+      SPRING.ZIPKIN.BASEURL: http://zipkin-server:9411/
+      RABBIT_URI: amqp://guest:guest@rabbitmq:5672
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_ZIPKIN_SENDER_TYPE: rabbit
+      SPRING_CLOUD_CONFIG_NAME: demo-service
+      SPRING_CONFIG_IMPORT: configserver:http://spring-config-server:8888?fail-fast=true&max-attempts=10&max-interval=1500&multiplier=1.2&initial-interval=1100
+      SPRING_PROFILES_ACTIVE: dev
+    restart: always
+
+  spring-config-server:
+    image: sau2382/spring-cloud-config-server:0.0.1-SNAPSHOT
+    mem_limit: 700m
+    ports:
+      - "8888:8888"
+    networks:
+      - demo-rest-network
+    depends_on:
+      - naming-server
+    environment:
+      EUREKA.CLIENT.SERVICEURL.DEFAULTZONE: http://naming-server:8761/eureka
+      SPRING.ZIPKIN.BASEURL: http://zipkin-server:9411/
+    restart: always
+    
+  api-gateway:
+    image: sau2382/api-gateway:0.0.1-SNAPSHOT
+    mem_limit: 700m
+    ports:
+      - "8765:8765"
+    networks:
+      - demo-rest-network
+    depends_on:
+      - naming-server
+      - rabbitmq
+    environment:
+      EUREKA.CLIENT.SERVICEURL.DEFAULTZONE: http://naming-server:8761/eureka
+      SPRING.ZIPKIN.BASEURL: http://zipkin-server:9411/
+      RABBIT_URI: amqp://guest:guest@rabbitmq:5672
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_ZIPKIN_SENDER_TYPE: rabbit
+    restart: always
+    
+  naming-server:
+    image: sau2382/naming-server:0.0.1-SNAPSHOT
+    mem_limit: 700m
+    ports:
+      - "8761:8761"
+    networks:
+      - demo-rest-network
+    restart: always
+    
+#docker run -p 9411:9411 openzipkin/zipkin:2.23
+
+  zipkin-server:
+    image: openzipkin/zipkin:2.23
+    mem_limit: 300m
+    ports:
+      - "9411:9411"
+    networks:
+      - demo-rest-network
+    environment:
+      RABBIT_URI: amqp://guest:guest@rabbitmq:5672
+    depends_on:
+      - rabbitmq
+    restart: always #Restart if there is a problem starting up
+
+  rabbitmq:
+    image: rabbitmq:3.8.12-management
+    mem_limit: 300m
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - demo-rest-network
+
+
+networks:
+  demo-rest-network:
