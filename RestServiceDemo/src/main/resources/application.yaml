@@ -7,19 +7,19 @@ spring:
     name: demo-service  
   config:
     import: optional:configserver:http://localhost:8888?fail-fast=false&max-attempts=10&max-interval=1500&multiplier=1.2&initial-interval=1100
-    #import: configserver:http://localhost:8888?fail-fast=true&max-attempts=10&max-interval=1500&multiplier=1.2&initial-interval=1100
+    #import:  configserver:http://localhost:8888?fail-fast=true&max-attempts=10&max-interval=1500&multiplier=1.2&initial-interval=1100
   cloud:
     config:
       enabled: true
       name: demo-service
-      fail-fast: true
-      request-connect-timeout: 10
-      request-read-timeout: 30
-#      retry:
-#        max-attempts: 10
-#        max-interval: 1500
-#        multiplier: 1.2
-#        initial-interval: 1100
+      fail-fast: false
+      #request-connect-timeout: 10
+      #request-read-timeout: 30
+      retry:
+        max-attempts: 10
+        max-interval: 1500
+        multiplier: 1.2
+        initial-interval: 1100
   sleuth:
     sampler:
       probability: 1.0
@@ -52,6 +52,9 @@ demoservice:
     rolloverSize: 1MB
   welcometext: "my app local 1.0"
  
+logging:
+  level:
+    org.springframework: error
 
 #custom property for enabling log streaming to logstash
 logstash:
