@@ -1,0 +1,179 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+  labels:
+    app: demo-service
+  name: demo-service
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: demo-service
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: demo-service
+    spec:
+      containers:
+      - image: sau2382/demo-rest-service:0.0.1-SNAPSHOT
+        imagePullPolicy: IfNotPresent
+        name: demo-service
+        ports:
+            - containerPort: 80
+        readinessProbe:
+          httpGet:
+            port: 80
+            path: /demoservice/actuator/health/readiness
+        livenessProbe:
+          httpGet:
+            port: 80
+            path: /demoservice/actuator/health/liveness            
+        envFrom:
+          - configMapRef:
+              name: demo-service
+        # env:
+        # - name: SPRING_PROFILES_ACTIVE
+          # value: dev      
+      - image: sau2382/spring-cloud-config-server:0.0.1-SNAPSHOT
+        imagePullPolicy: IfNotPresent
+        name: spring--cloud-config
+      restartPolicy: Always
+
+
+---
+## Config Map to set spring profile as dev for demo-service application
+apiVersion: v1
+data:
+  SPRING_PROFILES_ACTIVE: dev
+  test: test1
+kind: ConfigMap
+metadata:
+  name: demo-service
+  namespace: default
+  
+  
+---
+##Creates a ClusterIP for demo-service application on port 80 accesible only between pods and not outside world
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-cluster-ip-service
+spec:
+  type: ClusterIP
+  selector:
+    app: demo-service
+  ports:
+    - port: 80
+      targetPort: 80
+
+---
+##Creates a ClusterIP for spring-config-server application on port 8888 accesible only between pods and not outside world
+apiVersion: v1
+kind: Service
+metadata:
+  name: spring-config-cluster-ip-service
+spec:
+  type: ClusterIP
+  selector:
+    app: demo-service
+  ports:
+    - port: 8888
+      targetPort: 8888        
+
+
+
+---
+# Loadbalancer service to loadbalance only one deployment per port - [8080 for demo-service and 8888 for spring-config server] 
+# http://localhost:8080/demo-service/dev
+# http://localhost:8888/demo-service/dev
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: demo-service
+  name: demo-service
+  namespace: default
+spec:
+  ports:
+  - name: demo-service
+    port: 8080
+    protocol: TCP
+    targetPort: 80
+  - name: spring-config
+    port: 8888
+    protocol: TCP
+    targetPort: 8888
+  selector:
+    app: demo-service
+  sessionAffinity: None
+  type: LoadBalancer
+
+
+
+---
+# NGINX Ingrees service to loadbalance multiple deployments on 80/443 port based on rules - [80/443 for demo-service and 80/443 for spring-config server]  
+# http://localhost/demoservice/test
+# http://localhost/demo-service/dev
+apiVersion: networking.k8s.io/v1
+# UPDATE API
+kind: Ingress
+metadata:
+  name: ingress-service
+  annotations:
+    kubernetes.io/ingress.class: 'nginx'
+    nginx.ingress.kubernetes.io/use-regex: 'true'
+    #nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/session-cookie-name: "route"
+    nginx.ingress.kubernetes.io/affinity-mode: "persistent"
+    nginx.ingress.kubernetes.io/affinity-canary-behavior: "sticky"	
+    nginx.ingress.kubernetes.io/session-cookie-path: "nginxcookie"		
+    nginx.ingress.kubernetes.io/session-cookie-expires: "172800"
+    nginx.ingress.kubernetes.io/session-cookie-max-age: "172800"
+spec:
+  defaultBackend:
+    service:
+      name: demo-cluster-ip-service
+      port:
+        number: 80
+  rules:
+    - http:
+        paths:
+          - path: /
+            # UPDATE PATH
+            pathType: Prefix
+            # ADD PATHTYPE
+            backend:
+              service:
+                # UPDATE SERVICE FIELDS
+                name: demo-cluster-ip-service
+                port:
+                  number: 80        
+          - path: /demoservice/?(.*)
+            # PATH  http://localhost:80/demoservice/test
+            pathType: Prefix
+            # ADD PATHTYPE
+            backend:
+              service:
+                # UPDATE SERVICE FIELDS
+                name: demo-cluster-ip-service
+                port:
+                  number: 80
+          - path: /demo-service/?(.*)
+            # PATH http://localhost:80/demo-service/dev
+            pathType: Prefix
+            # ADD PATHTYPE
+            backend:
+              service:
+                # UPDATE SERVICE FIELDS
+                name: spring-config-cluster-ip-service
+                port:
+                  number: 8888                  
