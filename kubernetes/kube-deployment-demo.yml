@@ -8,7 +8,7 @@ metadata:
   name: demo-service
   namespace: default
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: demo-service
@@ -27,21 +27,21 @@ spec:
         imagePullPolicy: IfNotPresent
         name: demo-service
         ports:
-            - containerPort: 80
+            - containerPort: 7001
         readinessProbe:
           httpGet:
-            port: 80
+            port: 7001
             path: /demoservice/actuator/health/readiness
         livenessProbe:
           httpGet:
-            port: 80
+            port: 7001
             path: /demoservice/actuator/health/liveness            
         envFrom:
           - configMapRef:
               name: demo-service
-        # env:
-        # - name: SPRING_PROFILES_ACTIVE
-          # value: dev      
+        env:
+         - name: demoservice-host
+           value: helper-cluster-ip-service      
       - image: sau2382/spring-cloud-config-server:0.0.1-SNAPSHOT
         imagePullPolicy: IfNotPresent
         name: spring--cloud-config
@@ -53,7 +53,8 @@ spec:
 apiVersion: v1
 data:
   SPRING_PROFILES_ACTIVE: dev
-  test: test1
+  WELCOMETEXT: my app K8S 1.0
+  #demoservice-host: helper-cluster-ip-service
 kind: ConfigMap
 metadata:
   name: demo-service
@@ -61,7 +62,7 @@ metadata:
   
   
 ---
-##Creates a ClusterIP for demo-service application on port 80 accesible only between pods and not outside world
+##Creates a ClusterIP for demo-service application on port 7001 accesible only between pods and not outside world
 apiVersion: v1
 kind: Service
 metadata:
@@ -71,15 +72,15 @@ spec:
   selector:
     app: demo-service
   ports:
-    - port: 80
-      targetPort: 80
+    - port: 7001
+      targetPort: 7001
 
 ---
 ##Creates a ClusterIP for spring-config-server application on port 8888 accesible only between pods and not outside world
 apiVersion: v1
 kind: Service
 metadata:
-  name: spring-config-cluster-ip-service
+  name: spring-config-demo-cluster-ip-service
 spec:
   type: ClusterIP
   selector:
@@ -91,9 +92,9 @@ spec:
 
 
 ---
-# Loadbalancer service to loadbalance only one deployment per port - [8080 for demo-service and 8888 for spring-config server] 
-# http://localhost:8080/demo-service/dev
-# http://localhost:8888/demo-service/dev
+# Loadbalancer service to loadbalance only one deployment per port - [7001 for demo-service and 8881 for spring-config server] 
+# http://localhost:7001/demo-service/test
+# http://localhost:8881/demo-service/dev
 apiVersion: v1
 kind: Service
 metadata:
@@ -104,11 +105,11 @@ metadata:
 spec:
   ports:
   - name: demo-service
-    port: 8080
+    port: 7001
     protocol: TCP
-    targetPort: 80
+    targetPort: 7001
   - name: spring-config
-    port: 8888
+    port: 8881
     protocol: TCP
     targetPort: 8888
   selector:
@@ -156,7 +157,7 @@ spec:
                 # UPDATE SERVICE FIELDS
                 name: demo-cluster-ip-service
                 port:
-                  number: 80        
+                  number: 7001        
           - path: /demoservice/?(.*)
             # PATH  http://localhost:80/demoservice/test
             pathType: Prefix
@@ -166,14 +167,14 @@ spec:
                 # UPDATE SERVICE FIELDS
                 name: demo-cluster-ip-service
                 port:
-                  number: 80
-          - path: /demo-service/?(.*)
-            # PATH http://localhost:80/demo-service/dev
+                  number: 7001
+          - path: /helperservice/?(.*)
+            # PATH http://localhost:80/helperservice/help/world
             pathType: Prefix
             # ADD PATHTYPE
             backend:
               service:
                 # UPDATE SERVICE FIELDS
-                name: spring-config-cluster-ip-service
+                name: helper-cluster-ip-service
                 port:
-                  number: 8888                  
+                  number: 7002                  

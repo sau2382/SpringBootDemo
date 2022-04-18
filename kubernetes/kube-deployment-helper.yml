@@ -1,0 +1,114 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+  labels:
+    app: helper-service
+  name: helper-service
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: helper-service
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: helper-service
+    spec:
+      containers:
+      - image: sau2382/helper-rest-service:0.0.1-SNAPSHOT
+        imagePullPolicy: IfNotPresent
+        name: helper-service
+        ports:
+            - containerPort: 7002
+        readinessProbe:
+          httpGet:
+            port: 7002
+            path: /helperservice/actuator/health/readiness
+        livenessProbe:
+          httpGet:
+            port: 7002
+            path: /helperservice/actuator/health/liveness            
+        envFrom:
+          - configMapRef:
+              name: helper-service
+        # env:
+        # - name: SPRING_PROFILES_ACTIVE
+          # value: dev      
+      - image: sau2382/spring-cloud-config-server:0.0.1-SNAPSHOT
+        imagePullPolicy: IfNotPresent
+        name: spring--cloud-config
+      restartPolicy: Always
+
+
+---
+## Config Map to set spring profile as dev for helper-service application
+apiVersion: v1
+data:
+  SPRING_PROFILES_ACTIVE: dev
+kind: ConfigMap
+metadata:
+  name: helper-service
+  namespace: default
+  
+---
+##Creates a ClusterIP for helper-service application on port 7002 accesible only between pods and not outside world
+apiVersion: v1
+kind: Service
+metadata:
+  name: helper-cluster-ip-service
+spec:
+  type: ClusterIP
+  selector:
+    app: helper-service
+  ports:
+    - port: 7002
+      targetPort: 7002
+
+---
+##Creates a ClusterIP for spring-config-server application on port 8888 accesible only between pods and not outside world
+apiVersion: v1
+kind: Service
+metadata:
+  name: spring-config-helper-cluster-ip-service
+spec:
+  type: ClusterIP
+  selector:
+    app: helper-service
+  ports:
+    - port: 8888
+      targetPort: 8888    
+          
+
+---
+# Loadbalancer service to loadbalance only one deployment per port - [7002 for helper-service and 8882 for spring-config server] 
+# http://localhost:7002/helper-service/help/world
+# http://localhost:8882/helper-service/dev
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: helper-service
+  name: helper-service
+  namespace: default
+spec:
+  ports:
+  - name: helper-service
+    port: 7002
+    protocol: TCP
+    targetPort: 7002
+  - name: spring-config
+    port: 8882
+    protocol: TCP
+    targetPort: 8888
+  selector:
+    app: helper-service
+  sessionAffinity: None
+  type: LoadBalancer
