@@ -11,6 +11,7 @@
 
 	<modules>
 		<module>RestServiceDemo</module>
+		<module>HelperServiceDemo</module>
 		<module>spring-cloud-config-server</module>
 		<module>naming-server</module>
 		<module>api-gateway</module>

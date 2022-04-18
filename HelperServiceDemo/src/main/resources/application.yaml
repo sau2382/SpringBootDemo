@@ -1,17 +1,17 @@
 server:
-  port : 7001
+  port : 7002
   servlet:
-    context-path: /demoservice
+    context-path: /helperservice
 spring:
   application:
-    name: demo-service  
+    name: helper-service  
   config:
-    import: optional:configserver:${DEMO_SERVICE_SERVICE_HOST:http://localhost}:8888?fail-fast=false&max-attempts=10&max-interval=1500&multiplier=1.2&initial-interval=1100
+    import: optional:configserver:http://localhost:8888?fail-fast=false&max-attempts=10&max-interval=1500&multiplier=1.2&initial-interval=1100
     #import:  configserver:http://localhost:8888?fail-fast=true&max-attempts=10&max-interval=1500&multiplier=1.2&initial-interval=1100
   cloud:
     config:
       enabled: true
-      name: demo-service
+      name: helper-service
       fail-fast: false
       #request-connect-timeout: 10
       #request-read-timeout: 30
@@ -55,11 +55,11 @@ springdoc:
   swagger-ui:
     path: /swagger
     
-demoservice:
+helperservice:
   log:
     path: logs
     rolloverSize: 1MB
-  welcometext: "${WELCOMETEXT:my app local 1.0}"
+  appId: "Helper server: local"
  
 logging:
   level:
