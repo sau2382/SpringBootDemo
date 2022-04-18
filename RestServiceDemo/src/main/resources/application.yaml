@@ -59,7 +59,7 @@ demoservice:
   log:
     path: logs
     rolloverSize: 1MB
-  welcometext: "my app local 1.0"
+  welcometext: "${WELCOMETEXT:my app local 1.0}"
  
 logging:
   level:
