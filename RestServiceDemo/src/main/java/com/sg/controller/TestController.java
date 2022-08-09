@@ -29,6 +29,10 @@ public class TestController {
 	@Value("${demoservice.welcometext}")
 	private String appName;
 	
+	/**
+	 * @param name
+	 * @return RestResponse
+	 */
 	@GetMapping("/test")
 	public RestResponse test(@RequestParam(value = "name", defaultValue = "World") String name) {
 		log.info("Rest controller /test");
@@ -38,6 +42,7 @@ public class TestController {
         String port = environment.getProperty("local.server.port");
 		String host = environment.getProperty("HOSTNAME");
 		
+		/*Open Feign REST prxoy call*/
 		Helper helper = proxy.callHelperService(name);
 		
 		return new RestResponse((long)1, String.format(template, name, appName, host, port),helper);
